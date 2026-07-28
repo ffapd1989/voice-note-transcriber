@@ -1,0 +1,10 @@
+# Versões fixadas para build reproduzível (validadas em 2026-07-28, Python 3.14).
+customtkinter==6.0.0
+requests==2.34.2
+# tkinterdnd2 fixado na versão contra a qual o app foi desenvolvido/testado.
+tkinterdnd2==0.5.0
+pygame-ce==2.5.7
+mutagen==1.48.1
+# PyOgg só publica pre-releases no PyPI; o pin exato (==) instala sem precisar de --pre.
+pyogg==0.6.14a1
+pyinstaller==6.21.0

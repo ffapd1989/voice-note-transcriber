@@ -1,0 +1,13 @@
+# Build do PyInstaller
+build/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+
+# Zips de distribuição gerados pelo build.ps1
+*.zip
+
+# Config local do MCP (não versionar)
+.mcp.json

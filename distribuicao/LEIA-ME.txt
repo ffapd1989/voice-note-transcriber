@@ -1,0 +1,49 @@
+TRANSCRITOR DE ÁUDIO DE ZAP — v2.1.0
+====================================
+
+O QUE É
+-------
+Aplicativo para Windows que transcreve arquivos de áudio (MP3, M4A, OGG/OPUS
+do WhatsApp, WAV e outros) usando a API Whisper da OpenAI, com opção de
+limpeza/formatação do texto por GPT. Basta arrastar o arquivo para a janela,
+aguardar e copiar ou salvar o texto. O tema (claro/escuro) acompanha o
+Windows e pode ser fixado no botão no topo do app.
+
+VOCÊ PRECISA DE UMA CHAVE DE API DA OPENAI
+------------------------------------------
+O app não vem com chave embutida — cada pessoa usa a sua própria, e o custo
+da transcrição é cobrado na conta OpenAI de quem usa (centavos por áudio).
+
+Importante: a chave nunca é gravada em arquivo de texto. Ela fica guardada
+no Gerenciador de Credenciais do Windows, cifrada pela sua conta — só abre
+no seu usuário, nesta máquina. Você informa a chave uma única vez; para
+removê-la depois, use o botão "Esquecer chave" nas Configurações do app.
+
+Como obter a sua chave:
+1. Acesse https://platform.openai.com e crie uma conta (ou entre na sua).
+2. No menu, vá em "API keys" e clique em "Create new secret key".
+3. Copie a chave (começa com "sk-...") e guarde em local seguro — ela só é
+   exibida uma vez.
+4. É preciso ter crédito na conta (aba "Billing"); alguns dólares duram muito.
+5. Cole a chave no app na primeira vez que abrir — ele guarda com segurança.
+
+AVISO DO WINDOWS (SMARTSCREEN)
+------------------------------
+Na primeira execução, o Windows pode mostrar uma tela azul dizendo que o
+aplicativo "foi impedido de iniciar" ou que é de "fornecedor desconhecido".
+Isso é normal para programas sem assinatura digital (que custa caro e é
+usada por empresas). Para executar:
+
+1. Clique em "Mais informações".
+2. Clique em "Executar assim mesmo".
+
+O aviso aparece só na primeira vez.
+
+REQUISITOS
+----------
+- Windows 10 ou 11, 64 bits.
+- Conexão com a internet (a transcrição acontece nos servidores da OpenAI).
+- Chave de API da OpenAI (veja acima).
+
+Nada precisa ser instalado: o "Transcritor de Audio de Zap.exe" já contém tudo.
+Dúvidas ou problemas: fale com quem enviou este arquivo.
