@@ -3,6 +3,27 @@
 All notable changes to this project are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [2.2.0] — 2026-07-28
+
+### Changed
+
+- **Recommended models are now the defaults:** `gpt-4o-mini-transcribe` for
+  transcription (more accurate and cheaper than `whisper-1`) and `gpt-4.1-nano`
+  for the GPT cleanup pass. Existing configs still on the old defaults are
+  migrated automatically; an explicit choice is never overwritten.
+- `whisper-1` moved to the end of the model list and is documented as legacy,
+  kept only for third-party endpoints that don't expose the newer models.
+- The "Whisper model" label became "Transcription model" — the default model is
+  no longer a Whisper one.
+
+### Added
+
+- **Built-in guide on how to get an OpenAI API key**, opened from the "How do I
+  get a key?" link in Settings and whenever a transcription is attempted without
+  a key. Numbered steps, buttons that open the right OpenAI pages, cost estimate
+  and a note that the API is prepaid and separate from ChatGPT.
+- Recommended model shown under each model selector.
+
 ## [2.1.0] — 2026-07-28
 
 ### Added

@@ -4,8 +4,8 @@
 # Referenciado por transcritor.spec via EXE(version='version_info.txt').
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(2, 1, 0, 0),
-    prodvers=(2, 1, 0, 0),
+    filevers=(2, 2, 0, 0),
+    prodvers=(2, 2, 0, 0),
     mask=0x3F,
     flags=0x0,
     OS=0x40004,
@@ -21,12 +21,12 @@ VSVersionInfo(
           [
             StringStruct('CompanyName', 'Felipe Drummond'),
             StringStruct('FileDescription', 'Transcritor de Áudio de Zap — áudios do WhatsApp em texto via Whisper'),
-            StringStruct('FileVersion', '2.1.0.0'),
+            StringStruct('FileVersion', '2.2.0.0'),
             StringStruct('InternalName', 'Transcritor de Audio de Zap'),
             StringStruct('LegalCopyright', '© 2026 Felipe Drummond'),
             StringStruct('OriginalFilename', 'Transcritor de Audio de Zap.exe'),
             StringStruct('ProductName', 'Transcritor de Áudio de Zap'),
-            StringStruct('ProductVersion', '2.1.0.0')
+            StringStruct('ProductVersion', '2.2.0.0')
           ]
         )
       ]

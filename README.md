@@ -41,7 +41,7 @@ Turn WhatsApp voice notes (and any other audio) into clean, readable text using 
 - **Integrated player** — listen to the audio right next to its transcription, with seek.
 - **Light / dark theme** — follows Windows automatically (including the title bar), or can be pinned manually with the header button, which cycles ◐ auto → ○ light → ● dark.
 - **Multilingual interface** — pick the UI language in the footer's bottom-right selector (each option written in its own language): Auto (follows Windows), Português, English, Español, falling back to English if Windows reports another language. The change applies instantly — no restart, and transcriptions already on screen are kept.
-- **Whisper models** — `whisper-1`, `gpt-4o-transcribe`, `gpt-4o-mini-transcribe`.
+- **Transcription models** — `gpt-4o-mini-transcribe` (default, recommended), `gpt-4o-transcribe`, and legacy `whisper-1`. See [Recommended models](#recommended-models).
 - **Audio language** — defaults to `auto`, letting Whisper detect it; pick a specific language to pin it. The selector appears both on the main screen (next to the drop area) and in Settings, and the two stay in sync.
 - **GPT cleanup** — optional post-processing pass with an editable prompt (placeholder `{transcricao}`). The default prompt ships in eight languages (pt, en, es, fr, de, it, ja, zh) and follows the interface language; if the audio language is one the interface doesn't cover (fr, de, it, ja, zh), that one wins, since it's the language of the text being cleaned. Editing the prompt makes it custom, and a custom prompt never changes on its own — "Restore default" brings back the current language's version.
 - **Rewrite** — give the GPT a free-form instruction about the transcribed text (e.g. "summarize", "translate to English").
@@ -53,11 +53,46 @@ Turn WhatsApp voice notes (and any other audio) into clean, readable text using 
 
 The API key is **never written to a plain-text file**. It is stored in the **Windows Credential Manager**, encrypted per-account via DPAPI, under the target `TranscritorDeAudio/OpenAI`. If an older `config.json` still has a plain-text `api_key`, the app scrubs it from the file on load and migrates it into the Credential Manager automatically. The "Forget key" button in Settings deletes it from the vault. "Test key" performs a `GET {base}/models` request to confirm the key works without saving anything extra.
 
+## An API key is required — there is no way around it
+
+**This app does not transcribe anything on its own.** It is a client: the audio is sent to a speech-to-text service, and that service needs an API key. Without one, nothing works.
+
+You have two options, and both need a key:
+
+1. **OpenAI** (the default) — create a key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys). See [How to get a key](#how-to-get-an-openai-api-key) below.
+2. **Any OpenAI v1-compatible service** — LM Studio, Ollama, Groq, Azure OpenAI, or your own server. Point the **Endpoint** field at it. The infrastructure doesn't have to be OpenAI's, but that service will still require its own key.
+
+The app never ships with a key, and the author's key is never involved: **you pay only for what you transcribe, on your own account.**
+
+### How to get an OpenAI API key
+
+The app has this same guide built in — click **"How do I get a key?"** in Settings, and it opens with clickable links.
+
+<div align="center"><img src="docs/screenshots/api-key-help-en.png" alt="Built-in guide on how to get an OpenAI API key" width="460"></div>
+
+1. Create an account (or sign in) at [platform.openai.com](https://platform.openai.com/signup).
+2. **Add credit under [Billing](https://platform.openai.com/settings/organization/billing/overview).** The API is prepaid and **separate from ChatGPT** — having ChatGPT Plus does **not** grant API access. This is the step most people miss.
+3. Go to [API keys](https://platform.openai.com/api-keys) and click **Create new secret key**.
+4. Copy it (it starts with `sk-` and is shown only once) and paste it into the app.
+
+**Cost:** roughly **US$ 0.003 per minute of audio**, plus a few cents per thousand words cleaned up by GPT. A typical WhatsApp voice note costs a fraction of a cent — a few dollars of credit last a very long time.
+
+## Recommended models
+
+The defaults are already the recommended combination — you don't need to change anything:
+
+| Task | Default | Why |
+|---|---|---|
+| **Transcription** | **`gpt-4o-mini-transcribe`** | Better accuracy than `whisper-1` at a lower price. This is the one to use. |
+| **GPT cleanup** | **`gpt-4.1-nano`** | Cleanup is a simple, high-volume task: nano handles punctuation and filler removal well and costs a fraction of the bigger models. |
+
+`gpt-4o-transcribe` is available if you want the largest transcription model. `whisper-1` is the legacy model and is kept only for compatibility with third-party endpoints that don't expose the newer ones — **it is not recommended**.
+
 ## Requirements
 
 - Windows 10 or 11, 64-bit.
-- Your own OpenAI API key (transcription cost is billed to your OpenAI account, typically cents per audio file).
-- Internet connection (transcription happens on OpenAI's servers, or your configured endpoint).
+- Your own OpenAI API key (or a key for a compatible service — see above).
+- Internet connection (transcription happens on OpenAI's servers, or on the endpoint you configure).
 
 ## Download
 
@@ -82,7 +117,7 @@ Versions in `requirements.txt` are pinned (`==`) for reproducible builds.
 
 ```powershell
 .\build.ps1        # builds dist\Transcritor de Audio de Zap.exe
-.\build.ps1 -Zip   # also produces Transcritor-de-Audio-de-Zap-v2.1.0-win64.zip
+.\build.ps1 -Zip   # also produces Transcritor-de-Audio-de-Zap-v2.2.0-win64.zip
 ```
 
 The script (PowerShell 7) checks for Python, installs dependencies, and runs PyInstaller with `transcritor.spec` (onefile, no console). UPX compression is disabled (`upx=False`) because UPX-compressed executables are a classic false-positive trigger for antivirus software — a bad tradeoff for something you're sending to friends. The PyInstaller work path is set outside the project folder, because Google Drive locks newly created temp files and breaks `--clean`. The window and executable icon come from `assets/icone.ico` (an amber chat bubble with a waveform inside, generated by script).
@@ -96,8 +131,8 @@ Stored at `%APPDATA%\TranscricaoApp\config.json`. The API key is **never** part 
 | `appearance` | string | `"system"` (`system` / `light` / `dark`) |
 | `ui_language` | string | `"auto"` (`auto` / `pt` / `en` / `es`) |
 | `base_url` | string | `"https://api.openai.com/v1"` |
-| `whisper_model` | string | `"whisper-1"` |
-| `gpt_model` | string | `"gpt-4.1-mini"` |
+| `whisper_model` | string | `"gpt-4o-mini-transcribe"` (recommended) |
+| `gpt_model` | string | `"gpt-4.1-nano"` (recommended) |
 | `language` | string | `"auto"` — Whisper detects the language; any other value pins it |
 | `apply_cleanup` | bool | `true` |
 | `cleanup_prompt` | string | `""` — empty means "use the built-in prompt for the current language". Only a custom prompt is stored here, with `{transcricao}` as the placeholder for the raw transcription |

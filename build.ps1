@@ -6,7 +6,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Version = '2.1.0'
+$Version = '2.2.0'
 $ProjectDir = $PSScriptRoot
 $ExePath = Join-Path $ProjectDir 'dist\Transcritor de Audio de Zap.exe'
 $ZipPath = Join-Path $ProjectDir "Transcritor-de-Audio-de-Zap-v$Version-win64.zip"

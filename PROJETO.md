@@ -139,8 +139,8 @@ Salvas em `%APPDATA%\TranscricaoApp\config.json` (**sem** `api_key` — ver acim
 | `appearance` | str | `"system"` (`system`/`light`/`dark`) |
 | `ui_language` | str | `"auto"` (`auto`/`pt`/`en`/`es` — ver seção Internacionalização) |
 | `base_url` | str | `"https://api.openai.com/v1"` |
-| `whisper_model` | str | `"whisper-1"` |
-| `gpt_model` | str | `"gpt-4.1-mini"` |
+| `whisper_model` | str | `"gpt-4o-mini-transcribe"` (recomendado; whisper-1 é migrado no boot) |
+| `gpt_model` | str | `"gpt-4.1-nano"` (recomendado) |
 | `language` | str | `"auto"` — Whisper detecta; qualquer outro valor fixa o idioma |
 | `apply_cleanup` | bool | `true` |
 | `cleanup_prompt` | str | `""` — vazio = usar o prompt padrão do idioma; só personalização é gravada |
@@ -191,7 +191,7 @@ A interface (não o log, que permanece técnico em pt-BR) é traduzida em três 
 
 ```powershell
 .\build.ps1          # dist\Transcritor de Audio de Zap.exe
-.\build.ps1 -Zip     # + Transcritor-de-Audio-de-Zap-v2.1.0-win64.zip (exe + LEIA-ME.txt)
+.\build.ps1 -Zip     # + Transcritor-de-Audio-de-Zap-v2.2.0-win64.zip (exe + LEIA-ME.txt)
 ```
 
 Decisões do `transcritor.spec`:

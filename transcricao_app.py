@@ -52,8 +52,8 @@ DEFAULT_CONFIG = {
     "appearance": "system",   # system | light | dark
     "ui_language": "auto",    # auto (Windows, fallback inglês) | pt | en | es
     "base_url": "https://api.openai.com/v1",
-    "whisper_model": "whisper-1",
-    "gpt_model": "gpt-4.1-mini",
+    "whisper_model": "gpt-4o-mini-transcribe",   # recomendado: melhor e mais barato
+    "gpt_model": "gpt-4.1-nano",                 # limpeza é tarefa simples e volumosa
     "language": "auto",       # auto = o Whisper detecta (padrão)
     "apply_cleanup": True,
     # Vazio = usar o prompt padrão do idioma corrente. Só vira texto quando o
@@ -754,8 +754,13 @@ MIME_TYPES = {
     ".flac": "audio/flac",
 }
 
-WHISPER_MODELS = ["whisper-1", "gpt-4o-transcribe", "gpt-4o-mini-transcribe"]
-GPT_MODELS = ["gpt-4.1-mini", "gpt-4.1", "gpt-4o", "gpt-4o-mini"]
+# Recomendado primeiro. whisper-1 é o modelo antigo: fica por último, só para
+# quem usa um endpoint compatível que ainda não expõe os modelos novos.
+WHISPER_MODELS = ["gpt-4o-mini-transcribe", "gpt-4o-transcribe", "whisper-1"]
+GPT_MODELS = ["gpt-4.1-nano", "gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini", "gpt-4o"]
+
+RECOMMENDED_WHISPER = "gpt-4o-mini-transcribe"
+RECOMMENDED_GPT = "gpt-4.1-nano"
 LANGUAGES = ["pt", "en", "es", "fr", "de", "it", "ja", "zh", "auto"]
 
 # Formatos com seek confiável via pygame
@@ -863,7 +868,8 @@ I18N = {
     "endpoint_insecure": ("Endpoint sem HTTPS: sua chave seria enviada em texto claro.",
                           "Endpoint without HTTPS: your key would be sent in clear text.",
                           "Endpoint sin HTTPS: tu clave se enviaría en texto plano."),
-    "lbl_whisper":       ("Modelo Whisper", "Whisper model", "Modelo Whisper"),
+    "lbl_whisper":       ("Modelo de transcrição", "Transcription model",
+                          "Modelo de transcripción"),
     "lbl_audio_lang":    ("Idioma do áudio", "Audio language", "Idioma del audio"),
     "lbl_cleanup":       ("Aplicar limpeza", "Apply cleanup", "Aplicar limpieza"),
     "lbl_gpt":           ("Modelo GPT", "GPT model", "Modelo GPT"),
@@ -936,6 +942,41 @@ I18N = {
     "footer_offer":      ("transcritor de áudio de zap é um oferecimento de",
                           "transcritor de áudio de zap is brought to you by",
                           "transcritor de áudio de zap es un obsequio de"),
+    # ── Ajuda: como obter uma chave da OpenAI ─────────────────────────────
+    "help_link":         ("Como consigo uma chave?", "How do I get a key?",
+                          "¿Cómo consigo una clave?"),
+    "help_title":        ("Como obter uma chave da OpenAI",
+                          "How to get an OpenAI API key",
+                          "Cómo obtener una clave de OpenAI"),
+    "help_intro":        ("O app não vem com chave: cada pessoa usa a sua, e o custo cai na própria conta. Leva dois minutos.",
+                          "The app ships without a key: everyone uses their own, billed to their own account. It takes two minutes.",
+                          "La app no trae clave: cada persona usa la suya, y el costo va a su propia cuenta. Toma dos minutos."),
+    "help_step1":        ("Crie uma conta (ou entre) em platform.openai.com.",
+                          "Create an account (or sign in) at platform.openai.com.",
+                          "Crea una cuenta (o entra) en platform.openai.com."),
+    "help_step2":        ("Adicione crédito em Billing. A API é pré-paga e separada do ChatGPT — ter ChatGPT Plus NÃO dá acesso à API.",
+                          "Add credit under Billing. The API is prepaid and separate from ChatGPT — having ChatGPT Plus does NOT grant API access.",
+                          "Agrega crédito en Billing. La API es prepaga y separada de ChatGPT — tener ChatGPT Plus NO da acceso a la API."),
+    "help_step3":        ("Vá em API keys e clique em \"Create new secret key\".",
+                          "Go to API keys and click \"Create new secret key\".",
+                          "Ve a API keys y haz clic en \"Create new secret key\"."),
+    "help_step4":        ("Copie a chave (começa com sk- e só aparece uma vez) e cole no campo de Ajustes.",
+                          "Copy the key (it starts with sk- and is shown only once) and paste it in Settings.",
+                          "Copia la clave (empieza con sk- y solo se muestra una vez) y pégala en Ajustes."),
+    "help_cost":         ("Custo aproximado: cerca de US$ 0,003 por minuto de áudio, mais alguns centavos por mil palavras limpas pelo GPT. Um áudio de zap custa uma fração de centavo.",
+                          "Rough cost: about US$ 0.003 per minute of audio, plus a few cents per thousand words cleaned up by GPT. A voice note costs a fraction of a cent.",
+                          "Costo aproximado: unos US$ 0,003 por minuto de audio, más algunos centavos por mil palabras limpiadas por GPT. Un audio cuesta una fracción de centavo."),
+    "help_safety":       ("A chave fica cifrada pelo DPAPI nesta conta do Windows e só é enviada para a OpenAI (ou para o endpoint que você configurar).",
+                          "The key is encrypted with DPAPI under this Windows account and is only sent to OpenAI (or to the endpoint you configure).",
+                          "La clave se cifra con DPAPI en esta cuenta de Windows y solo se envía a OpenAI (o al endpoint que configures)."),
+    "help_compatible":   ("Também funciona com qualquer serviço compatível com a API v1 da OpenAI (LM Studio, Ollama, Groq, Azure...): informe a URL no campo Endpoint. Mas alguma chave — da OpenAI ou do serviço escolhido — é sempre necessária.",
+                          "It also works with any OpenAI v1-compatible service (LM Studio, Ollama, Groq, Azure...): set the URL in the Endpoint field. But a key — from OpenAI or from your chosen service — is always required.",
+                          "También funciona con cualquier servicio compatible con la API v1 de OpenAI (LM Studio, Ollama, Groq, Azure...): indica la URL en el campo Endpoint. Pero siempre hace falta una clave, de OpenAI o del servicio elegido."),
+    "open_platform":     ("Abrir platform.openai.com", "Open platform.openai.com", "Abrir platform.openai.com"),
+    "open_keys":         ("Página de chaves", "API keys page", "Página de claves"),
+    "open_billing":      ("Billing", "Billing", "Billing"),
+    "close_btn":         ("Fechar", "Close", "Cerrar"),
+    "recommended":       ("recomendado", "recommended", "recomendado"),
     # O nome é um trocadilho brasileiro ("zap" = WhatsApp): fora do pt-BR,
     # uma linha discreta explica o que a ferramenta faz.
     "wordmark_aka":      ("",
@@ -1331,6 +1372,64 @@ def _github_image(size=16):
         size=(size, size)
     )
     return _github_cache
+
+
+class ApiKeyHelp(ctk.CTkToplevel):
+    """Modal explicando como obter uma chave da OpenAI, com os links certos."""
+
+    OPEN_LINKS = (
+        ("open_platform", "https://platform.openai.com/signup"),
+        ("open_keys", "https://platform.openai.com/api-keys"),
+        ("open_billing", "https://platform.openai.com/settings/organization/billing/overview"),
+    )
+
+    def __init__(self, master):
+        super().__init__(master)
+        self.title(tr("help_title"))
+        self.geometry("560x620")
+        self.minsize(480, 520)
+        self.configure(fg_color=BG)
+        self.transient(master)
+        self.after(60, lambda: (_apply_titlebar_theme(self), self.grab_set()))
+        self._build()
+
+    def _build(self):
+        wrap = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        wrap.pack(fill="both", expand=True, padx=18, pady=(16, 8))
+
+        ctk.CTkLabel(wrap, text=tr("help_title"), font=display_font(17),
+                     text_color=TEXT, anchor="w").pack(fill="x")
+        ctk.CTkLabel(wrap, text=tr("help_intro"), font=ui_font(12),
+                     text_color=MUTED, anchor="w",
+                     wraplength=470, justify="left").pack(fill="x", pady=(6, 14))
+
+        # Passos numerados: aqui a ordem importa de verdade
+        for i, key in enumerate(("help_step1", "help_step2", "help_step3", "help_step4"), 1):
+            row = ctk.CTkFrame(wrap, fg_color=SURFACE, corner_radius=10,
+                               border_color=BORDER, border_width=1)
+            row.pack(fill="x", pady=3)
+            inner = ctk.CTkFrame(row, fg_color="transparent")
+            inner.pack(fill="x", padx=12, pady=10)
+            ctk.CTkLabel(inner, text=str(i), font=mono_font(13), text_color=ACCENT,
+                         width=18, anchor="n").pack(side="left", anchor="n")
+            ctk.CTkLabel(inner, text=tr(key), font=ui_font(12), text_color=TEXT,
+                         anchor="w", wraplength=420,
+                         justify="left").pack(side="left", fill="x", expand=True)
+
+        links = ctk.CTkFrame(wrap, fg_color="transparent")
+        links.pack(fill="x", pady=(12, 4))
+        for key, url in self.OPEN_LINKS:
+            ghost_button(links, tr(key), lambda u=url: webbrowser.open(u),
+                         width=10, height=30).pack(side="left", padx=(0, 6))
+
+        for key in ("help_cost", "help_safety", "help_compatible"):
+            ctk.CTkLabel(wrap, text=tr(key), font=ui_font(11), text_color=MUTED,
+                         anchor="w", wraplength=470,
+                         justify="left").pack(fill="x", pady=(10, 0))
+
+        foot = ctk.CTkFrame(self, fg_color="transparent")
+        foot.pack(fill="x", padx=18, pady=(0, 14))
+        primary_button(foot, tr("close_btn"), self.destroy, width=110).pack(side="right")
 
 
 class LangPicker(ctk.CTkButton):
@@ -2207,10 +2306,20 @@ class ConfigPanel(ctk.CTkScrollableFrame):
         hint_row = ctk.CTkFrame(key_card, fg_color="transparent")
         hint_row.pack(fill="x", padx=12, pady=(0, 8))
 
+        hint_col = ctk.CTkFrame(hint_row, fg_color="transparent")
+        hint_col.pack(side="left", fill="x", expand=True)
+
         ctk.CTkLabel(
-            hint_row, text=tr("key_hint"),
+            hint_col, text=tr("key_hint"),
             font=ui_font(11), text_color=MUTED, anchor="w"
-        ).pack(side="left", fill="x", expand=True)
+        ).pack(anchor="w")
+
+        help_link = ctk.CTkLabel(
+            hint_col, text=tr("help_link"), font=ui_font(11, "bold"),
+            text_color=ACCENT, anchor="w", cursor="hand2"
+        )
+        help_link.pack(anchor="w")
+        help_link.bind("<Button-1>", lambda e: ApiKeyHelp(self.winfo_toplevel()))
 
         self._forget_btn = ghost_button(hint_row, tr("forget_key"),
                                         self._forget_key, width=118, height=26)
@@ -2257,9 +2366,11 @@ class ConfigPanel(ctk.CTkScrollableFrame):
         grid1.pack(fill="x", pady=3)
         grid1.grid_columnconfigure((0, 1), weight=1, uniform="cols")
 
-        self.whisper_var = ctk.StringVar(value=self.cfg.get("whisper_model", "whisper-1"))
+        self.whisper_var = ctk.StringVar(
+            value=self.cfg.get("whisper_model", RECOMMENDED_WHISPER))
         self._grid_cell(grid1, 0, tr("lbl_whisper"), lambda p: Dropdown(
-            p, values=WHISPER_MODELS, variable=self.whisper_var))
+            p, values=WHISPER_MODELS, variable=self.whisper_var),
+            hint=f"{RECOMMENDED_WHISPER} — {tr('recommended')}")
 
         # Mesma StringVar do seletor da tela principal — os dois andam juntos.
         self._grid_cell(grid1, 1, tr("lbl_audio_lang"), lambda p: Dropdown(
@@ -2281,9 +2392,10 @@ class ConfigPanel(ctk.CTkScrollableFrame):
             progress_color=ACCENT
         ))
 
-        self.gpt_var = ctk.StringVar(value=self.cfg.get("gpt_model", "gpt-4.1-mini"))
+        self.gpt_var = ctk.StringVar(value=self.cfg.get("gpt_model", RECOMMENDED_GPT))
         self._grid_cell(grid2, 1, tr("lbl_gpt"), lambda p: Dropdown(
-            p, values=GPT_MODELS, variable=self.gpt_var))
+            p, values=GPT_MODELS, variable=self.gpt_var),
+            hint=f"{RECOMMENDED_GPT} — {tr('recommended')}")
 
         # (O idioma da interface fica no seletor do rodapé — troca imediata.)
 
@@ -2335,7 +2447,7 @@ class ConfigPanel(ctk.CTkScrollableFrame):
         primary_button(save_row, tr("save_settings"), self.save,
                        width=190).pack(side="right")
 
-    def _grid_cell(self, grid, col, label, widget_cb):
+    def _grid_cell(self, grid, col, label, widget_cb, hint=None):
         cell = ctk.CTkFrame(grid, fg_color=SURFACE, corner_radius=10,
                             border_color=BORDER, border_width=1)
         cell.grid(row=0, column=col, sticky="nsew",
@@ -2344,7 +2456,11 @@ class ConfigPanel(ctk.CTkScrollableFrame):
             cell, text=label, font=ui_font(13), text_color=TEXT, anchor="w"
         ).pack(fill="x", padx=12, pady=(8, 2))
         w = widget_cb(cell)
-        w.pack(fill="x", padx=12, pady=(0, 10))
+        w.pack(fill="x", padx=12, pady=(0, 4 if hint else 10))
+        if hint:
+            ctk.CTkLabel(cell, text=hint, font=mono_font(10),
+                         text_color=MUTED, anchor="w").pack(fill="x", padx=12,
+                                                            pady=(0, 8))
         return w
 
     def _toggle_key_visibility(self):
@@ -2513,6 +2629,21 @@ class App(ctk.CTk):
         if not self.cfg.get("language"):
             self.cfg["language"] = "auto"
 
+        # Migração dos defaults antigos, que eram piores e mais caros. Só troca
+        # quem está exatamente no valor herdado — escolha diferente é respeitada.
+        self._model_migrated = False
+        if self.cfg.get("whisper_model") == "whisper-1":
+            self.cfg["whisper_model"] = RECOMMENDED_WHISPER
+            self._model_migrated = True
+        if self.cfg.get("gpt_model") == "gpt-4.1-mini":
+            self.cfg["gpt_model"] = RECOMMENDED_GPT
+            self._model_migrated = True
+        if self._model_migrated:
+            try:
+                save_config(self.cfg)   # grava para valer, não só em memória
+            except Exception:
+                pass
+
         # Migração: prompt padrão antigo gravado em texto volta a ser "vazio"
         # (assim ele passa a acompanhar o idioma). Personalizações são mantidas.
         if self.cfg.get("cleanup_prompt") and not is_custom_prompt(self.cfg["cleanup_prompt"]):
@@ -2566,6 +2697,9 @@ class App(ctk.CTk):
             self._log("Chave de API removida do config.json (texto plano).")
         if self._migrated_to_vault:
             self._log("Chave migrada para o Gerenciador de Credenciais do Windows.")
+        if self._model_migrated:
+            self._log(f"Modelos atualizados para os recomendados: "
+                      f"{RECOMMENDED_WHISPER} + {RECOMMENDED_GPT}.")
         self._refresh_status()
 
         # Barra de título acompanha o tema (agora e a cada mudança do Windows)
@@ -2894,6 +3028,7 @@ class App(ctk.CTk):
                 self.config_panel.key_entry.focus_set()
             except Exception:
                 pass
+            ApiKeyHelp(self)
 
     # ── Seleção e submit ───────────────────────────────────────────────────
 
@@ -2952,8 +3087,12 @@ class App(ctk.CTk):
         self.cfg = self.config_panel.collect()
         if not self.get_api_key():
             self._log("ERRO: chave de API não informada")
-            messagebox.showwarning(tr("key_missing_title"), tr("key_missing_body"))
             self._show_page("Configurações")
+            try:
+                self.config_panel.key_entry.focus_set()
+            except Exception:
+                pass
+            ApiKeyHelp(self)   # em vez de só avisar, ensina a resolver
             return
 
         # Persiste no cofre automaticamente (sem exigir clique em Salvar)
