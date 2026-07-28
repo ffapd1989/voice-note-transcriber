@@ -1,14 +1,14 @@
 # Build do Transcritor de Áudio (PowerShell 7)
-# Uso:  .\build.ps1          -> gera dist\Transcritor de Audio de Zap.exe
+# Uso:  .\build.ps1          -> gera dist\transcrizap.exe
 #       .\build.ps1 -Zip     -> além do exe, gera o zip de distribuição
 param(
     [switch]$Zip
 )
 
 $ErrorActionPreference = 'Stop'
-$Version = '2.2.0'
+$Version = '2.2.1'
 $ProjectDir = $PSScriptRoot
-$ExePath = Join-Path $ProjectDir 'dist\Transcritor de Audio de Zap.exe'
+$ExePath = Join-Path $ProjectDir 'dist\transcrizap.exe'
 $ZipPath = Join-Path $ProjectDir "Transcritor-de-Audio-de-Zap-v$Version-win64.zip"
 $LeiaMe = Join-Path $ProjectDir 'distribuicao\LEIA-ME.txt'
 

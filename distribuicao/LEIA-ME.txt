@@ -1,4 +1,4 @@
-TRANSCRITOR DE ÁUDIO DE ZAP — v2.1.0
+TRANSCRITOR DE ÁUDIO DE ZAP — v2.2.1
 ====================================
 
 O QUE É
@@ -45,5 +45,5 @@ REQUISITOS
 - Conexão com a internet (a transcrição acontece nos servidores da OpenAI).
 - Chave de API da OpenAI (veja acima).
 
-Nada precisa ser instalado: o "Transcritor de Audio de Zap.exe" já contém tudo.
+Nada precisa ser instalado: o "transcrizap.exe" já contém tudo.
 Dúvidas ou problemas: fale com quem enviou este arquivo.

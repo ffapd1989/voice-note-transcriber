@@ -1,4 +1,4 @@
-TRANSCRITOR DE AUDIO DE ZAP - v2.1.0
+TRANSCRITOR DE AUDIO DE ZAP - v2.2.1
 (a.k.a. WhatsApp voice note transcriber)
 =====================================
 
@@ -54,6 +54,6 @@ REQUIREMENTS
 - Internet connection (transcription happens on OpenAI's servers).
 - OpenAI API key (see above).
 
-Nothing needs to be installed: "Transcritor de Audio de Zap.exe"
+Nothing needs to be installed: "transcrizap.exe"
 already contains everything it needs.
 Questions or problems: contact whoever sent you this file.

@@ -18,7 +18,7 @@ transcricao_app.py       # app completo (single file)
 requirements.txt         # dependências pinadas (builds reproduzíveis)
 transcritor.spec         # spec portável do PyInstaller (sem paths absolutos)
 version_info.txt         # VSVersionInfo do Windows (propriedades do exe)
-build.ps1                # gera dist\Transcritor de Audio de Zap.exe  [-Zip: pacote p/ envio]
+build.ps1                # gera dist\transcrizap.exe  [-Zip: pacote p/ envio]
 distribuicao/LEIA-ME.txt    # texto (pt-BR) que acompanha o zip enviado a colaboradores
 distribuicao/README-EN.txt  # mesmo texto em inglês (não empacotado pelo build.ps1 hoje)
 assets/icone.ico          # logo (balão de conversa âmbar + forma de onda) — exe e janela
@@ -190,8 +190,8 @@ A interface (não o log, que permanece técnico em pt-BR) é traduzida em três 
 ## Build e distribuição
 
 ```powershell
-.\build.ps1          # dist\Transcritor de Audio de Zap.exe
-.\build.ps1 -Zip     # + Transcritor-de-Audio-de-Zap-v2.2.0-win64.zip (exe + LEIA-ME.txt)
+.\build.ps1          # dist\transcrizap.exe
+.\build.ps1 -Zip     # + Transcritor-de-Audio-de-Zap-v2.2.1-win64.zip (exe + LEIA-ME.txt)
 ```
 
 Decisões do `transcritor.spec`:

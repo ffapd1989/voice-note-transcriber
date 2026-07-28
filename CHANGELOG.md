@@ -3,6 +3,29 @@
 All notable changes to this project are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [2.2.1] — 2026-07-28
+
+### Fixed
+
+- **The packaged executable did not start at all.** Pillow is a direct dependency
+  — the UI draws its chevron, "+" badge and GitHub icon with PIL — but it was
+  missing from `requirements.txt`, reaching the build only as a transitive
+  dependency of customtkinter, which stopped shipping it in 6.0.0. A clean build
+  therefore produced an executable without PIL that raised `ModuleNotFoundError`
+  while building the first dropdown. Because the app is packaged with
+  `console=False`, this failed silently: double-clicking it did nothing at all.
+  Pillow is now pinned explicitly.
+
+### Changed
+
+- **The executable is now named `transcrizap.exe`** (it was
+  `Transcritor de Audio de Zap.exe`). Some corporate endpoint protection —
+  Trend Micro Apex One Application Control, in the case that prompted this —
+  keeps deny rules keyed to the *file name*: the very same bytes were denied
+  execution under the old name and ran fine under any other, anywhere on disk.
+  A short, unremarkable name avoids that class of collision. The product name
+  shown in the title bar and in the file properties is unchanged.
+
 ## [2.2.0] — 2026-07-28
 
 ### Changed

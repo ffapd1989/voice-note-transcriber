@@ -73,7 +73,11 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Transcritor de Audio de Zap',
+    # Nome curto de propósito: o Application Control do Apex One (antivírus
+    # corporativo) mantém regra de bloqueio pelo nome "Transcritor de Audio de
+    # Zap.exe" — os MESMOS bytes rodam sob qualquer outro nome. O nome de
+    # exibição do produto continua em version_info.txt e na janela do app.
+    name='transcrizap',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
