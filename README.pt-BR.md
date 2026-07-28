@@ -1,14 +1,34 @@
-> [English](README.md)
+<div align="center">
+
+<img src="docs/logo.png" alt="" width="88">
 
 # Transcritor de Áudio de Zap
 
-Transforma áudios do WhatsApp (e qualquer outro áudio) em texto limpo, usando a API Whisper da OpenAI com limpeza opcional por GPT — um app nativo para Windows, com identidade visual própria em tema claro/escuro.
+**Transcreve áudio de zap no Windows** — arraste a mensagem de voz, receba o texto limpo.
+
+[![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white)](#download)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](#desenvolvimento)
+[![Whisper](https://img.shields.io/badge/OpenAI-Whisper-412991?logo=openai&logoColor=white)](https://platform.openai.com/docs/guides/speech-to-text)
+[![Licença](https://img.shields.io/badge/Licença-MIT-green)](LICENSE)
+
+[Baixar](#download) · [Funcionalidades](#funcionalidades) · [Build](#build-do-execut%C3%A1vel) · [English](README.md)
+
+<img src="docs/screenshots/app-dark-pt.png" alt="Transcrição pronta com player de forma de onda, tema escuro" width="720">
+
+</div>
+
+Transforma áudios do WhatsApp (e qualquer outro áudio) em texto limpo usando a **API Whisper da OpenAI**, com uma passada opcional de **limpeza por GPT** que corrige pontuação, tira muletas de fala e não mexe no sentido do que foi dito. App nativo para Windows — sem instalação, sem cadastro, sem telemetria.
 
 ## O que ele faz
 
 1. Arraste um ou vários arquivos de áudio para a janela (ou clique para escolher).
 2. Cada arquivo ganha sua própria forma de onda, é enviado ao Whisper e, opcionalmente, limpo pelo GPT.
 3. Copie o resultado, salve como `.txt`, ou copie tudo de uma vez.
+
+<div align="center">
+<img src="docs/screenshots/app-light-pt.png" alt="Tema claro" width="600">
+<br><em>Tema claro — acompanha o Windows automaticamente</em>
+</div>
 
 ## Funcionalidades
 
@@ -35,11 +55,13 @@ A chave de API **nunca é gravada em arquivo de texto plano**. Ela fica guardada
 - Sua própria chave de API da OpenAI (o custo da transcrição é cobrado na sua conta OpenAI, tipicamente centavos por áudio).
 - Conexão com a internet (a transcrição acontece nos servidores da OpenAI, ou no endpoint que você configurar).
 
-## Instalar / Baixar
+## Download
 
-Baixe o zip da última release, descompacte e execute o `.exe` — nada mais precisa ser instalado.
+**[⬇ Baixar a última versão](https://github.com/ffapd1989/voice-note-transcriber/releases/latest)** — um único `.exe` dentro de um zip. Descompacte e execute; não precisa instalar nada.
 
-Como o executável não tem assinatura digital, o Windows SmartScreen mostra um aviso na primeira execução. Clique em **"Mais informações"** e depois em **"Executar assim mesmo"**. Esse aviso aparece só uma vez.
+Na primeira execução você cola a sua chave da OpenAI. Ela vai direto para o Gerenciador de Credenciais do Windows, então isso é feito uma vez só.
+
+> **Aviso do SmartScreen:** o executável não tem assinatura digital (certificados de code signing são caros), então o Windows mostra a tela azul "O Windows protegeu o computador" na primeira vez. Clique em **Mais informações** → **Executar assim mesmo**. Só aparece uma vez.
 
 ## Desenvolvimento
 

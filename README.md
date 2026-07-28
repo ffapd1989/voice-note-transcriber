@@ -1,16 +1,38 @@
-> [Português (BR)](README.pt-BR.md)
+<div align="center">
+
+<img src="docs/logo.png" alt="" width="88">
 
 # Transcritor de Áudio de Zap
 
-*a.k.a. WhatsApp voice note transcriber* — "zap" is how Brazilians call WhatsApp.
+**WhatsApp voice note transcriber for Windows** — drag a voice message in, get clean text out.
 
-Turn WhatsApp voice notes (and any other audio) into clean text, using the OpenAI Whisper API with optional GPT cleanup — a small, native Windows app with its own light/dark visual identity.
+*("zap" is what Brazilians call WhatsApp)*
+
+[![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white)](#download)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](#development)
+[![Whisper](https://img.shields.io/badge/OpenAI-Whisper-412991?logo=openai&logoColor=white)](https://platform.openai.com/docs/guides/speech-to-text)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+[Download](#download) · [Features](#features) · [Build](#build) · [Português (BR)](README.pt-BR.md)
+
+<img src="docs/screenshots/app-dark-en.png" alt="Transcription result with waveform player, dark theme" width="720">
+
+</div>
+
+Turn WhatsApp voice notes (and any other audio) into clean, readable text using the **OpenAI Whisper API**, with an optional **GPT cleanup** pass that fixes punctuation, removes filler words and keeps the meaning untouched. A small, native Windows app — no install, no account, no telemetry.
 
 ## What it does
 
 1. Drag one or more audio files onto the window (or click to choose them).
 2. Each file gets its own waveform, sent to Whisper, and optionally cleaned up by GPT.
 3. Copy the result, save it as `.txt`, or copy everything at once.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/app-light-en.png" alt="Light theme"><br><em>Light theme — follows Windows automatically</em></td>
+<td width="50%"><img src="docs/screenshots/settings-dark-en.png" alt="Settings"><br><em>Settings — key stored in Windows Credential Manager</em></td>
+</tr>
+</table>
 
 ## Features
 
@@ -37,11 +59,13 @@ The API key is **never written to a plain-text file**. It is stored in the **Win
 - Your own OpenAI API key (transcription cost is billed to your OpenAI account, typically cents per audio file).
 - Internet connection (transcription happens on OpenAI's servers, or your configured endpoint).
 
-## Install / Download
+## Download
 
-Download the latest release zip, extract it, and run the `.exe` — nothing else needs to be installed.
+**[⬇ Download the latest release](https://github.com/ffapd1989/voice-note-transcriber/releases/latest)** — a single `.exe` inside a zip. Extract and run; nothing needs to be installed.
 
-Since the executable is not digitally signed, Windows SmartScreen will show a warning the first time you run it. Click **"More info"**, then **"Run anyway"**. This warning appears only once.
+On first run you'll paste your own OpenAI API key. It goes straight into the Windows Credential Manager, so you only do this once.
+
+> **SmartScreen warning:** the executable is not digitally signed (code-signing certificates are expensive), so Windows shows a blue "Windows protected your PC" screen the first time. Click **More info** → **Run anyway**. It appears only once.
 
 ## Development
 
