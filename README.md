@@ -114,7 +114,12 @@ The Whisper API accepts files up to 25 MB; the app checks this before uploading.
 
 ## Credits
 
-Brought to you by Felipe Drummond — https://github.com/ffapd1989
+Brought to you by **Felipe Drummond** — [@ffapd1989](https://github.com/ffapd1989)
+
+An amateur programmer working with AI (a.k.a. a *vibe coding* hobbyist), whose day
+job is being a Public Defender at DPE-RS — the Public Defender's Office of Rio
+Grande do Sul, Brazil — and whose mission is using information technology to
+improve access to justice.
 
 ## License
 
