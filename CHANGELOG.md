@@ -3,6 +3,24 @@
 All notable changes to this project are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [2.3.0] — 2026-08-11
+
+### Added
+
+- **Automatic compaction for files over 25MB.** The Whisper API rejects
+  anything bigger than that; instead of only failing at upload time, the app
+  now asks — as soon as an oversized file is dropped — whether to compact it
+  automatically (re-encodes to mono 16kHz Opus at a bitrate computed to fit
+  the limit) before queuing it for transcription. Declining just skips that
+  file; the rest of the batch still goes through.
+
+### Changed
+
+- **The executable is noticeably bigger.** Compaction is done with a bundled
+  static FFmpeg binary (LGPL license, ffmpeg.org) — there's no way around its
+  size, roughly 110MB, so first-launch antivirus scanning may take longer
+  than previous releases.
+
 ## [2.2.1] — 2026-07-28
 
 ### Fixed
