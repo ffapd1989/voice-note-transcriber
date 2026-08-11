@@ -141,7 +141,7 @@ Stored at `%APPDATA%\TranscricaoApp\config.json`. The API key is **never** part 
 
 MP3, MP4, M4A, OGG, OGA, OPUS (WhatsApp), WAV, WEBM, FLAC.
 
-The Whisper API accepts files up to 25 MB; the app checks this before uploading.
+The Whisper API accepts files up to 25 MB; the app checks this before uploading, and offers to automatically compact (re-encode at a lower bitrate) any file over that limit, via a bundled static [FFmpeg](https://ffmpeg.org) (LGPL) binary.
 
 ## Known issues
 

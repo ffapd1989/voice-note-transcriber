@@ -29,6 +29,18 @@ hiddenimports += ['mutagen']
 binaries += collect_dynamic_libs('pyogg')
 hiddenimports += ['pyogg']
 
+# ffmpeg.exe (compactação de áudio >25MB): baixado por build.ps1 para um
+# cache FORA do projeto (mesma razão do $WorkPath — Google Drive não deve
+# sincronizar esse binário de ~110MB a cada build). build.ps1 exporta
+# TRANSCRITOR_FFMPEG_PATH apontando pro cache; se ausente (build manual sem
+# passar por build.ps1), cai para vendor/ffmpeg/ffmpeg.exe local (não
+# versionado no git — ver .gitignore). Se nada for encontrado, o app segue
+# funcionando, só sem a opção de compactação automática (ver _ffmpeg_path
+# em transcricao_app.py, que resolve o binário em runtime do mesmo jeito).
+_ffmpeg_bin = os.environ.get('TRANSCRITOR_FFMPEG_PATH') or os.path.join('vendor', 'ffmpeg', 'ffmpeg.exe')
+if os.path.exists(_ffmpeg_bin):
+    binaries.append((_ffmpeg_bin, '.'))
+
 # Ícone: coloque um arquivo em assets/icone.ico e ele é usado automaticamente
 # (no exe e também na janela do app — por isso entra em datas).
 _icon = os.path.join('assets', 'icone.ico')

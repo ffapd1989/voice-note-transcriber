@@ -48,6 +48,13 @@ expensive and mostly used by companies). To run it anyway:
 
 This warning only appears the first time.
 
+FILES OVER 25MB
+----------------
+The Whisper API only accepts files up to 25MB. If you drop a bigger file,
+the app asks whether to automatically compact it (lowers the audio
+bitrate) to fit the limit before uploading - compaction uses FFmpeg
+(ffmpeg.org, LGPL license), bundled inside "transcrizap.exe".
+
 REQUIREMENTS
 -------------
 - Windows 10 or 11, 64-bit.

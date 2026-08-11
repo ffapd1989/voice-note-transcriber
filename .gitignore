@@ -2,6 +2,10 @@
 build/
 dist/
 
+# ffmpeg.exe baixado por build.ps1 (compactação de áudio >25MB) — binário
+# grande, não versionar; ver comentário em build.ps1/transcritor.spec.
+vendor/
+
 # Python
 __pycache__/
 *.pyc

@@ -39,6 +39,13 @@ usada por empresas). Para executar:
 
 O aviso aparece só na primeira vez.
 
+ARQUIVOS ACIMA DE 25MB
+----------------------
+A API do Whisper só aceita arquivos de até 25MB. Se você soltar um arquivo
+maior, o app pergunta se quer compactá-lo automaticamente (reduz o bitrate
+do áudio) para caber no limite antes de enviar — a compactação usa o
+FFmpeg (ffmpeg.org, licença LGPL), incluído dentro do "transcrizap.exe".
+
 REQUISITOS
 ----------
 - Windows 10 ou 11, 64 bits.

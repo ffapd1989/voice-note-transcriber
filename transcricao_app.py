@@ -8,10 +8,13 @@ Gerenciador de Credenciais do Windows (DPAPI) — nunca em arquivo de texto.
 
 import os
 import sys
+import re
 import json
 import math
 import zlib
 import random
+import shutil
+import subprocess
 import threading
 import datetime
 import traceback
@@ -933,6 +936,32 @@ I18N = {
     "err_too_big":       ("Arquivo muito grande: {mb} MB. A API do Whisper aceita no máximo 25 MB.",
                           "File too large: {mb} MB. The Whisper API accepts at most 25 MB.",
                           "Archivo demasiado grande: {mb} MB. La API de Whisper acepta como máximo 25 MB."),
+    "compact_confirm_title": ("Arquivo(s) acima de 25 MB", "File(s) over 25 MB", "Archivo(s) por encima de 25 MB"),
+    "compact_confirm_body": ("Estes arquivos passam do limite de 25 MB da API do Whisper:\n\n{files}\n\n"
+                              "Compactar automaticamente (reduz bitrate/qualidade) para caber no limite?",
+                              "These files exceed the Whisper API's 25 MB limit:\n\n{files}\n\n"
+                              "Automatically compact them (lowers bitrate/quality) to fit the limit?",
+                              "Estos archivos superan el límite de 25 MB de la API de Whisper:\n\n{files}\n\n"
+                              "¿Compactarlos automáticamente (reduce el bitrate/calidad) para caber en el límite?"),
+    "compact_declined_log": ("{n} arquivo(s) acima de 25 MB foram ignorados (compactação recusada).",
+                              "{n} file(s) over 25 MB were skipped (compaction declined).",
+                              "{n} archivo(s) por encima de 25 MB fueron omitidos (compactación rechazada)."),
+    "compacting_title":  ("Compactando áudio", "Compacting audio", "Compactando audio"),
+    "compacting_file":   ("Compactando {i} de {n}: {name}", "Compacting {i} of {n}: {name}",
+                          "Compactando {i} de {n}: {name}"),
+    "compact_done_log":  ("Compactado: {name} ({before} MB → {after} MB)",
+                          "Compacted: {name} ({before} MB → {after} MB)",
+                          "Compactado: {name} ({before} MB → {after} MB)"),
+    "compact_failed_log": ("Falha ao compactar {name}: {err}", "Failed to compact {name}: {err}",
+                           "Fallo al compactar {name}: {err}"),
+    "err_ffmpeg_missing": ("ffmpeg não encontrado — não é possível compactar automaticamente.",
+                           "ffmpeg not found — automatic compaction is unavailable.",
+                           "ffmpeg no encontrado — no es posible compactar automáticamente."),
+    "err_duration_unknown": ("Não foi possível determinar a duração do áudio para compactar.",
+                             "Could not determine the audio duration to compact.",
+                             "No fue posible determinar la duración del audio para compactar."),
+    "err_compact_failed": ("Falha ao compactar o arquivo.", "Failed to compact the file.",
+                           "Fallo al compactar el archivo."),
     "err_no_conn":       ("Sem conexão com a internet ou endpoint inacessível.",
                           "No internet connection, or the endpoint is unreachable.",
                           "Sin conexión a internet o endpoint inaccesible."),
@@ -1044,7 +1073,7 @@ def transcribe_audio(file_path: str, cfg: dict, api_key: str,
     log(f"Tamanho: {file_size_mb:.1f} MB | Formato: {ext} | MIME: {mime}")
     log(f"Modelo Whisper: {cfg['whisper_model']} | Idioma: {cfg['language']}")
 
-    if file_size_mb > 25:
+    if file_size_mb > MAX_UPLOAD_MB:
         raise ValueError(tr("err_too_big", mb=f"{file_size_mb:.1f}"))
 
     headers = {"Authorization": f"Bearer {api_key}"}
@@ -1432,6 +1461,62 @@ class ApiKeyHelp(ctk.CTkToplevel):
         primary_button(foot, tr("close_btn"), self.destroy, width=110).pack(side="right")
 
 
+class CompactionDialog(ctk.CTkToplevel):
+    """Modal de progresso: reencoda em segundo plano os arquivos acima de 25 MB."""
+
+    def __init__(self, master, paths: list[str], on_done, log_cb=None):
+        super().__init__(master)
+        self._paths = paths
+        self._on_done = on_done
+        self._log = log_cb or (lambda msg: None)
+        self.title(tr("compacting_title"))
+        self.geometry("420x150")
+        self.minsize(420, 150)
+        self.resizable(False, False)
+        self.configure(fg_color=BG)
+        self.transient(master)
+        self.protocol("WM_DELETE_WINDOW", lambda: None)  # não fecha durante o processo
+        self.after(60, lambda: (_apply_titlebar_theme(self), self.grab_set()))
+        self._build()
+        threading.Thread(target=self._run, daemon=True).start()
+
+    def _build(self):
+        wrap = ctk.CTkFrame(self, fg_color="transparent")
+        wrap.pack(fill="both", expand=True, padx=20, pady=20)
+        self._label = ctk.CTkLabel(wrap, text=tr("compacting_title"), font=ui_font(13),
+                                    text_color=TEXT, anchor="w", wraplength=380, justify="left")
+        self._label.pack(fill="x", pady=(0, 12))
+        self._bar = ctk.CTkProgressBar(wrap, mode="indeterminate")
+        self._bar.pack(fill="x")
+        self._bar.start()
+
+    def _set_label(self, text):
+        self._label.configure(text=text)
+
+    def _run(self):
+        n = len(self._paths)
+        compacted = []
+        for i, path in enumerate(self._paths, 1):
+            name = Path(path).name
+            self.after(0, self._set_label, tr("compacting_file", i=i, n=n, name=name))
+            before_mb = Path(path).stat().st_size / (1024 * 1024)
+            try:
+                new_path = compact_audio(path)
+                after_mb = Path(new_path).stat().st_size / (1024 * 1024)
+                self.after(0, self._log, tr("compact_done_log", name=name,
+                                             before=f"{before_mb:.1f}", after=f"{after_mb:.1f}"))
+                compacted.append(new_path)
+            except Exception as e:
+                self.after(0, self._log, tr("compact_failed_log", name=name, err=str(e)))
+        self.after(0, self._finish, compacted)
+
+    def _finish(self, compacted: list[str]):
+        self._bar.stop()
+        self.grab_release()
+        self.destroy()
+        self._on_done(compacted)
+
+
 class LangPicker(ctk.CTkButton):
     """Seletor de idioma do rodapé: discreto, com chevron e menu no clique."""
 
@@ -1806,6 +1891,94 @@ def _to_playable_path(path: str) -> str:
     except Exception:
         # fallback: tenta carregar direto mesmo que possa falhar
         return path
+
+
+# ─── Compactação de áudio (ffmpeg) ────────────────────────────────────────────
+
+MAX_UPLOAD_MB = 25.0
+COMPACT_TARGET_MB = 24.0  # margem de segurança sobre o limite de 25MB da API
+
+
+def _ffmpeg_path() -> str | None:
+    """Localiza o ffmpeg: bundlado no exe (PyInstaller) ou no PATH (modo dev)."""
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    bundled = os.path.join(base, "ffmpeg.exe")
+    if os.path.exists(bundled):
+        return bundled
+    return shutil.which("ffmpeg")
+
+
+def _probe_duration_seconds(path: str) -> float:
+    """Duração em segundos: tenta mutagen primeiro, cai para `ffmpeg -i` (cobre webm)."""
+    dur = _get_audio_duration(path)
+    if dur > 0:
+        return dur
+    ffmpeg = _ffmpeg_path()
+    if not ffmpeg:
+        return 0.0
+    try:
+        proc = subprocess.run(
+            [ffmpeg, "-i", path],
+            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+            creationflags=subprocess.CREATE_NO_WINDOW, timeout=30,
+        )
+        m = re.search(rb"Duration:\s*(\d+):(\d+):(\d+\.\d+)", proc.stderr)
+        if m:
+            h, mnt, s = m.groups()
+            return int(h) * 3600 + int(mnt) * 60 + float(s)
+    except Exception:
+        pass
+    return 0.0
+
+
+def compact_audio(src_path: str, target_mb: float = COMPACT_TARGET_MB) -> str:
+    """
+    Reencoda src_path para Opus/OGG mono 16kHz num bitrate calculado para
+    caber em target_mb. Levanta RuntimeError (mensagem já traduzida) se o
+    ffmpeg não estiver disponível, a duração não puder ser determinada, ou o
+    processo falhar. Retorna o caminho do arquivo temporário gerado.
+    """
+    ffmpeg = _ffmpeg_path()
+    if not ffmpeg:
+        raise RuntimeError(tr("err_ffmpeg_missing"))
+
+    duration = _probe_duration_seconds(src_path)
+    if duration <= 0:
+        raise RuntimeError(tr("err_duration_unknown"))
+
+    # 8192 = 1024 (KB/MB) * 8 (bits/byte); 0.9 de margem para overhead do container.
+    bitrate_kbps = max(24, min(96, int((target_mb * 8192) / duration * 0.9)))
+
+    import tempfile
+    fd, tmp = tempfile.mkstemp(suffix=".ogg")
+    os.close(fd)
+    cmd = [
+        ffmpeg, "-y", "-i", src_path,
+        "-vn", "-ac", "1", "-ar", "16000",
+        "-c:a", "libopus", "-b:a", f"{bitrate_kbps}k",
+        tmp,
+    ]
+    try:
+        proc = subprocess.run(
+            cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+            creationflags=subprocess.CREATE_NO_WINDOW, timeout=600,
+        )
+    except Exception:
+        try:
+            os.unlink(tmp)
+        except Exception:
+            pass
+        raise RuntimeError(tr("err_compact_failed"))
+
+    if proc.returncode != 0 or not os.path.exists(tmp) or os.path.getsize(tmp) == 0:
+        try:
+            os.unlink(tmp)
+        except Exception:
+            pass
+        raise RuntimeError(tr("err_compact_failed"))
+
+    _temp_wav_files.append(tmp)  # mesma lista/limpeza de _to_playable_path
+    return tmp
 
 
 # ─── AudioPlayer ──────────────────────────────────────────────────────────────
@@ -3049,9 +3222,33 @@ class App(ctk.CTk):
             messagebox.showwarning(tr("no_valid_title"), tr("no_valid_body"))
             return
 
+        oversized = [p for p in valid if Path(p).stat().st_size / (1024 * 1024) > MAX_UPLOAD_MB]
+        if not oversized:
+            self._add_pending(valid)
+            return
+
+        ok = [p for p in valid if p not in oversized]
+        names = "\n".join(
+            f"• {Path(p).name} ({Path(p).stat().st_size / (1024 * 1024):.1f} MB)"
+            for p in oversized
+        )
+        if not messagebox.askyesno(tr("compact_confirm_title"),
+                                    tr("compact_confirm_body", files=names)):
+            self._log(tr("compact_declined_log", n=len(oversized)))
+            if ok:
+                self._add_pending(ok)
+            return
+
+        CompactionDialog(
+            self, oversized,
+            on_done=lambda compacted: self._add_pending(ok + compacted),
+            log_cb=self._log,
+        )
+
+    def _add_pending(self, paths: list[str]):
         # ACRESCENTA aos pendentes (segundo drop não substitui), deduplicando
         seen = set(self._pending_paths)
-        for p in valid:
+        for p in paths:
             if p not in seen:
                 self._pending_paths.append(p)
                 seen.add(p)
@@ -3255,7 +3452,7 @@ def main():
 
     app.mainloop()
 
-    # Limpa WAVs temporários criados para Opus
+    # Limpa temporários: WAVs criados para tocar Opus e OGGs de compactação
     for tmp in _temp_wav_files:
         try:
             os.unlink(tmp)
