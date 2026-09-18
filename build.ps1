@@ -6,7 +6,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Version = '2.4.0'
+$Version = '2.4.1'
 $ProjectDir = $PSScriptRoot
 $ExePath = Join-Path $ProjectDir 'dist\transcrizap.exe'
 $ZipPath = Join-Path $ProjectDir "Transcritor-de-Audio-de-Zap-v$Version-win64.zip"
@@ -27,10 +27,26 @@ if (-not $python) {
 $pyVersion = & python --version
 Write-Host "      $pyVersion em $($python.Source)"
 
-# (b) Instalar dependências (inclui pyinstaller, fixado no requirements.txt)
+# (b) Ambiente isolado + dependencias (inclui pyinstaller, fixado no requirements.txt)
+# O venv nao e conveniencia: sem ele o PyInstaller analisa o Python global da
+# maquina e empacota qualquer biblioteca que ache alcancavel a partir dali,
+# mesmo instalada por outro projeto. Isolado, so entra no exe o que o
+# requirements.txt traz. Fica FORA do projeto pela mesma razao do $WorkPath.
+$VenvDir = Join-Path $env:LOCALAPPDATA 'transcritor-build\venv'
+$VenvPython = Join-Path $VenvDir 'Scripts\python.exe'
 Write-Host ''
-Write-Host '[2/4] Instalando dependencias (requirements.txt)...'
-& python -m pip install -r (Join-Path $ProjectDir 'requirements.txt') --disable-pip-version-check -q
+Write-Host '[2/4] Preparando ambiente isolado e instalando dependencias...'
+if (-not (Test-Path $VenvPython)) {
+    Write-Host "      Criando venv em $VenvDir ..."
+    & python -m venv $VenvDir
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host 'ERRO ao criar o ambiente virtual.'
+        exit 1
+    }
+} else {
+    Write-Host "      Venv ja em cache: $VenvDir"
+}
+& $VenvPython -m pip install -r (Join-Path $ProjectDir 'requirements.txt') --disable-pip-version-check -q
 if ($LASTEXITCODE -ne 0) {
     Write-Host 'ERRO ao instalar dependencias. Verifique as mensagens acima.'
     exit 1
@@ -90,7 +106,7 @@ $env:TRANSCRITOR_FFMPEG_PATH = $FfmpegExe
 $WorkPath = Join-Path $env:LOCALAPPDATA 'Temp\transcritor-build'
 Write-Host ''
 Write-Host '[4/4] Gerando o executavel (PyInstaller)...'
-& python -m PyInstaller (Join-Path $ProjectDir 'transcritor.spec') --noconfirm --clean --distpath (Join-Path $ProjectDir 'dist') --workpath $WorkPath
+& $VenvPython -m PyInstaller (Join-Path $ProjectDir 'transcritor.spec') --noconfirm --clean --distpath (Join-Path $ProjectDir 'dist') --workpath $WorkPath
 if ($LASTEXITCODE -ne 0) {
     Write-Host 'ERRO no build. Verifique as mensagens acima.'
     exit 1

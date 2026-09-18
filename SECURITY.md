@@ -43,6 +43,10 @@ compromised, the key is compromised.
   accepting different bytes. See [build.ps1](build.ps1).
 - UPX compression is deliberately disabled — it is a classic antivirus false-positive trigger.
 - Dependencies are pinned to exact versions in [requirements.txt](requirements.txt).
+- The build runs in an **isolated virtual environment**, so the bundle contains only what
+  `requirements.txt` brings in and never a library that happens to be installed elsewhere on
+  the build machine. Transitive dependencies are not themselves pinned, so two builds can
+  still differ — this is isolation, not bit-for-bit reproducibility.
 
 ## Known limitation: releases are not signed
 
@@ -53,8 +57,8 @@ Code signing certificates cost money every year and, since June 2023, require a 
 or a cloud HSM. For a free tool given away to friends, that is not currently justified.
 
 **What this means for you:** that warning is expected, and clicking past it is not evidence
-that the file is safe. If you care, build it yourself from source with `build.ps1` — the build
-is reproducible from the pinned dependencies.
+that the file is safe. If you care, build it yourself from source with `build.ps1` and compare
+what you get against what you downloaded.
 
 ## Out of scope
 

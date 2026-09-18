@@ -44,6 +44,10 @@ Se a sua conta do Windows for comprometida, a chave também foi.
 - A compressão UPX está desativada de propósito — é gatilho clássico de falso-positivo de
   antivírus.
 - As dependências estão fixadas em versões exatas no [requirements.txt](requirements.txt).
+- O build roda num **ambiente virtual isolado**, então entra no pacote apenas o que o
+  `requirements.txt` traz, e nunca uma biblioteca que por acaso esteja instalada em outro
+  lugar da máquina de build. As dependências transitivas não estão fixadas, então dois builds
+  ainda podem diferir — isto é isolamento, não reprodutibilidade byte a byte.
 
 ## Limitação conhecida: as versões não são assinadas
 
@@ -57,7 +61,7 @@ justifica hoje.
 
 **O que isso significa para você:** esse aviso é esperado, e passar por ele não é prova de que o
 arquivo é seguro. Se isso importa para você, gere o executável você mesmo a partir do código com
-o `build.ps1` — o build é reproduzível a partir das dependências fixadas.
+o `build.ps1` e compare com o que você baixou.
 
 ## Fora de escopo
 
