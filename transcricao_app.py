@@ -55,8 +55,8 @@ DEFAULT_CONFIG = {
     "appearance": "system",   # system | light | dark
     "ui_language": "auto",    # auto (Windows, fallback inglês) | pt | en | es
     "base_url": "https://api.openai.com/v1",
-    "whisper_model": "gpt-4o-mini-transcribe",   # recomendado: melhor e mais barato
-    "gpt_model": "gpt-4.1-nano",                 # limpeza é tarefa simples e volumosa
+    "whisper_model": "gpt-transcribe",           # recomendado: modelo atual de transcrição
+    "gpt_model": "gpt-5.6-luna",                 # reescrita é tarefa simples e volumosa
     "language": "auto",       # auto = o Whisper detecta (padrão)
     "apply_cleanup": True,
     # Vazio = usar o prompt padrão do idioma corrente. Só vira texto quando o
@@ -759,11 +759,13 @@ MIME_TYPES = {
 
 # Recomendado primeiro. whisper-1 é o modelo antigo: fica por último, só para
 # quem usa um endpoint compatível que ainda não expõe os modelos novos.
-WHISPER_MODELS = ["gpt-4o-mini-transcribe", "gpt-4o-transcribe", "whisper-1"]
-GPT_MODELS = ["gpt-4.1-nano", "gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini", "gpt-4o"]
+WHISPER_MODELS = ["gpt-transcribe", "gpt-4o-mini-transcribe", "gpt-4o-transcribe",
+                  "whisper-1"]
+GPT_MODELS = ["gpt-5.6-luna", "gpt-4.1-nano", "gpt-4.1-mini", "gpt-4.1",
+              "gpt-4o-mini", "gpt-4o"]
 
-RECOMMENDED_WHISPER = "gpt-4o-mini-transcribe"
-RECOMMENDED_GPT = "gpt-4.1-nano"
+RECOMMENDED_WHISPER = "gpt-transcribe"
+RECOMMENDED_GPT = "gpt-5.6-luna"
 LANGUAGES = ["pt", "en", "es", "fr", "de", "it", "ja", "zh", "auto"]
 
 # Formatos com seek confiável via pygame
@@ -875,7 +877,7 @@ I18N = {
                           "Modelo de transcripción"),
     "lbl_audio_lang":    ("Idioma do áudio", "Audio language", "Idioma del audio"),
     "lbl_cleanup":       ("Aplicar limpeza", "Apply cleanup", "Aplicar limpieza"),
-    "lbl_gpt":           ("Modelo GPT", "GPT model", "Modelo GPT"),
+    "lbl_gpt":           ("Modelo de reescrita", "Rewrite model", "Modelo de reescritura"),
     "lbl_ui_lang":       ("Idioma da interface", "Interface language", "Idioma de la interfaz"),
     "prompt_toggle":     ("Prompt de limpeza", "Cleanup prompt", "Prompt de limpieza"),
     "prompt_var":        ("Variável disponível: {transcricao}",
@@ -992,9 +994,9 @@ I18N = {
     "help_step4":        ("Copie a chave (começa com sk- e só aparece uma vez) e cole no campo de Ajustes.",
                           "Copy the key (it starts with sk- and is shown only once) and paste it in Settings.",
                           "Copia la clave (empieza con sk- y solo se muestra una vez) y pégala en Ajustes."),
-    "help_cost":         ("Custo aproximado: cerca de US$ 0,003 por minuto de áudio, mais alguns centavos por mil palavras limpas pelo GPT. Um áudio de zap custa uma fração de centavo.",
-                          "Rough cost: about US$ 0.003 per minute of audio, plus a few cents per thousand words cleaned up by GPT. A voice note costs a fraction of a cent.",
-                          "Costo aproximado: unos US$ 0,003 por minuto de audio, más algunos centavos por mil palabras limpiadas por GPT. Un audio cuesta una fracción de centavo."),
+    "help_cost":         ("Custo aproximado: cerca de US$ 0,0045 por minuto de áudio, mais menos de meio centavo por mil palavras reescritas. Um áudio de zap de um minuto custa cerca de meio centavo.",
+                          "Rough cost: about US$ 0.0045 per minute of audio, plus less than half a cent per thousand words rewritten. A one-minute voice note costs about half a cent.",
+                          "Costo aproximado: unos US$ 0,0045 por minuto de audio, más menos de medio centavo por mil palabras reescritas. Un audio de un minuto cuesta cerca de medio centavo."),
     "help_safety":       ("A chave fica cifrada pelo DPAPI nesta conta do Windows e só é enviada para a OpenAI (ou para o endpoint que você configurar).",
                           "The key is encrypted with DPAPI under this Windows account and is only sent to OpenAI (or to the endpoint you configure).",
                           "La clave se cifra con DPAPI en esta cuenta de Windows y solo se envía a OpenAI (o al endpoint que configures)."),
@@ -2295,7 +2297,7 @@ class TranscriptionCard(ctk.CTkFrame):
         def _call():
             try:
                 payload = {
-                    "model": cfg.get("gpt_model", "gpt-4.1-mini"),
+                    "model": cfg.get("gpt_model", RECOMMENDED_GPT),
                     "messages": [{"role": "user", "content": full_prompt}],
                     "temperature": 0.4
                 }
@@ -2805,10 +2807,10 @@ class App(ctk.CTk):
         # Migração dos defaults antigos, que eram piores e mais caros. Só troca
         # quem está exatamente no valor herdado — escolha diferente é respeitada.
         self._model_migrated = False
-        if self.cfg.get("whisper_model") == "whisper-1":
+        if self.cfg.get("whisper_model") in ("whisper-1", "gpt-4o-mini-transcribe"):
             self.cfg["whisper_model"] = RECOMMENDED_WHISPER
             self._model_migrated = True
-        if self.cfg.get("gpt_model") == "gpt-4.1-mini":
+        if self.cfg.get("gpt_model") in ("gpt-4.1-mini", "gpt-4.1-nano"):
             self.cfg["gpt_model"] = RECOMMENDED_GPT
             self._model_migrated = True
         if self._model_migrated:

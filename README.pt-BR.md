@@ -11,7 +11,7 @@
 [![Whisper](https://img.shields.io/badge/OpenAI-Whisper-412991?logo=openai&logoColor=white)](https://platform.openai.com/docs/guides/speech-to-text)
 [![Licença](https://img.shields.io/badge/Licença-MIT-green)](LICENSE)
 
-[Baixar](#download) · [Funcionalidades](#funcionalidades) · [Build](#build-do-execut%C3%A1vel) · [English](README.md)
+[Baixar](#download) · [Funcionalidades](#funcionalidades) · [Build](#build-do-execut%C3%A1vel) · [Privacidade](PRIVACY.pt-BR.md) · [Segurança](SECURITY.pt-BR.md) · [English](README.md)
 
 <img src="docs/screenshots/app-dark-pt.png" alt="Transcrição pronta com player de forma de onda, tema escuro" width="720">
 
@@ -37,7 +37,7 @@ Transforma áudios do WhatsApp (e qualquer outro áudio) em texto limpo usando a
 - **Player integrado** — ouça o áudio ao lado da transcrição, com seek.
 - **Tema claro/escuro** — segue o Windows automaticamente (inclusive a barra de título), ou pode ser fixado manualmente pelo botão no topo, que alterna ◐ auto → ○ claro → ● escuro.
 - **Interface multilíngue** — escolha o idioma no seletor do canto inferior direito do rodapé (cada opção escrita no próprio idioma): Auto (segue o Windows), Português, English, Español, com fallback para inglês caso o Windows informe outro idioma. A troca vale na hora — sem reiniciar, e as transcrições já na tela são preservadas.
-- **Modelos de transcrição** — `gpt-4o-mini-transcribe` (padrão, recomendado), `gpt-4o-transcribe` e o antigo `whisper-1`. Veja [Modelos recomendados](#modelos-recomendados).
+- **Modelos de transcrição** — `gpt-transcribe` (padrão, recomendado), `gpt-4o-mini-transcribe`, `gpt-4o-transcribe` e o antigo `whisper-1`. Veja [Modelos recomendados](#modelos-recomendados).
 - **Idioma do áudio** — o padrão é `auto`, deixando o Whisper detectar; escolha um idioma específico para fixá-lo. O seletor aparece tanto na tela principal (ao lado da área de arrastar) quanto nos Ajustes, e os dois ficam sincronizados.
 - **Limpeza GPT** — pós-processamento opcional com prompt editável (placeholder `{transcricao}`). O prompt padrão existe em oito idiomas (pt, en, es, fr, de, it, ja, zh) e acompanha o idioma da interface; se o idioma do áudio for um que a interface não cobre (fr, de, it, ja, zh), ele é que vale, por ser o idioma do texto a limpar. Editar o prompt o torna personalizado, e um prompt personalizado nunca muda sozinho — "Restaurar padrão" traz de volta a versão do idioma atual.
 - **Reescrever** — dê ao GPT uma instrução livre sobre o texto transcrito (ex.: "resuma", "traduza para o inglês").
@@ -71,7 +71,7 @@ O app tem esse mesmo guia embutido — clique em **"Como consigo uma chave?"** n
 3. Vá em [API keys](https://platform.openai.com/api-keys) e clique em **Create new secret key**.
 4. Copie a chave (começa com `sk-` e só aparece uma vez) e cole no app.
 
-**Custo:** cerca de **US$ 0,003 por minuto de áudio**, mais alguns centavos por mil palavras limpas pelo GPT. Um áudio de zap típico custa uma fração de centavo — alguns dólares de crédito duram muitíssimo tempo.
+**Custo:** cerca de **US$ 0,0045 por minuto de áudio**, mais menos de meio centavo por mil palavras reescritas. Um áudio de zap típico custa cerca de meio centavo — alguns dólares de crédito duram muitíssimo tempo.
 
 ## Modelos recomendados
 
@@ -79,10 +79,10 @@ Os padrões já são a combinação recomendada — você não precisa mexer em 
 
 | Tarefa | Padrão | Por quê |
 |---|---|---|
-| **Transcrição** | **`gpt-4o-mini-transcribe`** | Mais preciso que o `whisper-1` e mais barato. É esse que se deve usar. |
-| **Limpeza GPT** | **`gpt-4.1-nano`** | Limpeza é tarefa simples e volumosa: o nano resolve pontuação e muletas de fala muito bem, por uma fração do preço dos modelos maiores. |
+| **Transcrição** | **`gpt-transcribe`** | Modelo atual de transcrição de arquivo da OpenAI. É esse que se deve usar. |
+| **Reescrita** | **`gpt-5.6-luna`** | Limpeza e reescrita são tarefas simples e volumosas: o Luna é a faixa rápida e barata da família GPT-5.6 e dá conta bem delas. |
 
-O `gpt-4o-transcribe` está disponível para quem quiser o modelo de transcrição maior. O `whisper-1` é o modelo antigo e está na lista apenas por compatibilidade com endpoints de terceiros que ainda não expõem os novos — **não é recomendado**.
+Os modelos `gpt-4o-*` são a geração anterior e continuam na lista para endpoints que ainda não expõem os novos. O `whisper-1` é o modelo antigo, mantido só por compatibilidade com terceiros — **não é recomendado**.
 
 ## Requisitos
 
@@ -113,7 +113,7 @@ As versões em `requirements.txt` são fixadas (`==`) para builds reproduzíveis
 
 ```powershell
 .\build.ps1        # gera dist\transcrizap.exe
-.\build.ps1 -Zip   # além do exe, gera Transcritor-de-Audio-de-Zap-v2.2.1-win64.zip
+.\build.ps1 -Zip   # além do exe, gera Transcritor-de-Audio-de-Zap-v2.4.0-win64.zip
 ```
 
 O script (PowerShell 7) verifica o Python, instala as dependências e roda o PyInstaller com o `transcritor.spec` (onefile, sem console). A compressão UPX fica desativada (`upx=False`), porque executáveis comprimidos com UPX são um gatilho clássico de falso-positivo em antivírus — uma troca ruim para algo que você vai enviar a amigos. O workpath do PyInstaller fica fora da pasta do projeto, porque o Google Drive trava arquivos temporários recém-criados e quebra o `--clean`. O ícone da janela e do executável vem de `assets/icone.ico` (um balão de conversa âmbar com uma forma de onda dentro, gerado por script).
@@ -127,8 +127,8 @@ Salva em `%APPDATA%\TranscricaoApp\config.json`. A chave de API **nunca** faz pa
 | `appearance` | string | `"system"` (`system` / `light` / `dark`) |
 | `ui_language` | string | `"auto"` (`auto` / `pt` / `en` / `es`) |
 | `base_url` | string | `"https://api.openai.com/v1"` |
-| `whisper_model` | string | `"gpt-4o-mini-transcribe"` (recomendado) |
-| `gpt_model` | string | `"gpt-4.1-nano"` (recomendado) |
+| `whisper_model` | string | `"gpt-transcribe"` (recomendado) |
+| `gpt_model` | string | `"gpt-5.6-luna"` (recomendado) |
 | `language` | string | `"auto"` — o Whisper detecta o idioma; qualquer outro valor o fixa |
 | `apply_cleanup` | bool | `true` |
 | `cleanup_prompt` | string | `""` — vazio significa "usar o prompt embutido do idioma atual". Só um prompt personalizado é gravado aqui, com `{transcricao}` como placeholder da transcrição bruta |
