@@ -113,7 +113,7 @@ As versões em `requirements.txt` são fixadas (`==`) para builds reproduzíveis
 
 ```powershell
 .\build.ps1        # gera dist\transcrizap.exe
-.\build.ps1 -Zip   # além do exe, gera Transcritor-de-Audio-de-Zap-v2.4.0-win64.zip
+.\build.ps1 -Zip   # além do exe, gera Transcritor-de-Audio-de-Zap-v2.4.1-win64.zip
 ```
 
 O script (PowerShell 7) verifica o Python, instala as dependências e roda o PyInstaller com o `transcritor.spec` (onefile, sem console). A compressão UPX fica desativada (`upx=False`), porque executáveis comprimidos com UPX são um gatilho clássico de falso-positivo em antivírus — uma troca ruim para algo que você vai enviar a amigos. O workpath do PyInstaller fica fora da pasta do projeto, porque o Google Drive trava arquivos temporários recém-criados e quebra o `--clean`. O ícone da janela e do executável vem de `assets/icone.ico` (um balão de conversa âmbar com uma forma de onda dentro, gerado por script).

@@ -191,7 +191,7 @@ A interface (não o log, que permanece técnico em pt-BR) é traduzida em três 
 
 ```powershell
 .\build.ps1          # dist\transcrizap.exe
-.\build.ps1 -Zip     # + Transcritor-de-Audio-de-Zap-v2.4.0-win64.zip (exe + LEIA-ME.txt)
+.\build.ps1 -Zip     # + Transcritor-de-Audio-de-Zap-v2.4.1-win64.zip (exe + LEIA-ME.txt)
 ```
 
 Decisões do `transcritor.spec`:

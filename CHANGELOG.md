@@ -3,6 +3,28 @@
 All notable changes to this project are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [2.4.1] — 2026-09-18
+
+### Fixed
+
+- **The executable no longer carries a library it never uses.** `build.ps1`
+  installed the dependencies into the machine's global Python, so PyInstaller
+  analysed everything installed there and bundled what it found reachable. In
+  practice that meant `cryptography` and its 9.9MB Rust binding, pulled in by
+  a package belonging to an unrelated project on the same machine. The build
+  now runs inside an isolated virtual environment, kept outside the project
+  directory for the same reason as the work path, so only what
+  `requirements.txt` brings in can reach the bundle. The executable dropped by
+  roughly 3.8MB.
+
+### Changed
+
+- **`SECURITY.md` no longer claims the build is reproducible from the pinned
+  dependencies.** It was not: transitive dependencies are not pinned, and
+  before the virtual environment the bundle also depended on whatever else was
+  installed on the build machine. The document now describes isolation, and
+  says plainly that this is not bit-for-bit reproducibility.
+
 ## [2.4.0] — 2026-09-18
 
 ### Added

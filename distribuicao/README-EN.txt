@@ -1,4 +1,4 @@
-TRANSCRITOR DE AUDIO DE ZAP - v2.4.0
+TRANSCRITOR DE AUDIO DE ZAP - v2.4.1
 (a.k.a. WhatsApp voice note transcriber)
 =====================================
 
