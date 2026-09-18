@@ -3,6 +3,31 @@
 All notable changes to this project are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [2.4.0] — 2026-09-18
+
+### Added
+
+- **Privacy and security policies.** `PRIVACY.md` and `SECURITY.md`, each with
+  a Portuguese counterpart, documenting exactly what leaves the machine (only
+  the three API calls it makes), what stays on it, and how to report a
+  vulnerability privately.
+
+### Changed
+
+- **`gpt-transcribe` is the new default transcription model**, replacing
+  `gpt-4o-mini-transcribe`. The `gpt-4o-*` models remain in the list for
+  compatible endpoints that do not expose the newer one yet.
+- **`gpt-5.6-luna` is the new default rewrite model**, replacing
+  `gpt-4.1-nano`.
+- **"GPT model" is now "Rewrite model"** in the interface, in all three
+  languages.
+- **Configs sitting on the previous defaults migrate on first launch**, the
+  same way `whisper-1` and `gpt-4.1-mini` already did. A choice that differs
+  from an old default is left untouched.
+- **Cost figures corrected.** Transcription is US$ 0.0045 per minute with
+  `gpt-transcribe`; rewriting a thousand words costs under half a cent with
+  Luna, where the previous text said "a few cents".
+
 ## [2.3.0] — 2026-08-11
 
 ### Added
