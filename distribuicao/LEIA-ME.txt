@@ -1,4 +1,4 @@
-TRANSCRITOR DE ÁUDIO DE ZAP — v2.4.1
+TRANSCRITOR DE ÁUDIO DE ZAP — v2.4.2
 ====================================
 
 O QUE É

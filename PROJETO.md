@@ -116,8 +116,11 @@ on_files([paths])           # ACRESCENTA aos pendentes (dedup) — não substitu
                     │     ├── POST {base}/audio/transcriptions  (Whisper)
                     │     └── POST {base}/chat/completions      (GPT, se cleanup=True)
                     ├── card.set_result(texto)  → onda vira AudioPlayer
+                    ├── CleanupError → card.set_result(texto_bruto, aviso)
                     └── card.set_error(msg)
 ```
+
+Se a limpeza falha, a transcrição já foi feita e paga: `transcribe_audio()` levanta `CleanupError` com o texto bruto em `.transcript`, e o card o mostra com o motivo da falha ao lado dos botões.
 
 Threads nunca tocam a UI diretamente — todo retorno via `self.after(0, ...)`.
 
@@ -139,8 +142,8 @@ Salvas em `%APPDATA%\TranscricaoApp\config.json` (**sem** `api_key` — ver acim
 | `appearance` | str | `"system"` (`system`/`light`/`dark`) |
 | `ui_language` | str | `"auto"` (`auto`/`pt`/`en`/`es` — ver seção Internacionalização) |
 | `base_url` | str | `"https://api.openai.com/v1"` |
-| `whisper_model` | str | `"gpt-4o-mini-transcribe"` (recomendado; whisper-1 é migrado no boot) |
-| `gpt_model` | str | `"gpt-4.1-nano"` (recomendado) |
+| `whisper_model` | str | `"gpt-transcribe"` (recomendado; padrões antigos são migrados no boot) |
+| `gpt_model` | str | `"gpt-5.6-luna"` (recomendado; padrões antigos são migrados no boot) |
 | `language` | str | `"auto"` — Whisper detecta; qualquer outro valor fixa o idioma |
 | `apply_cleanup` | bool | `true` |
 | `cleanup_prompt` | str | `""` — vazio = usar o prompt padrão do idioma; só personalização é gravada |
@@ -161,8 +164,10 @@ Endpoint configurável (`base_url`, qualquer serviço compatível com OpenAI v1;
 
 ```
 POST {base}/audio/transcriptions   # multipart: model, response_format=text, language, file
-POST {base}/chat/completions       # limpeza (temp 0.2) e reescrita (temp 0.4)
+POST {base}/chat/completions       # limpeza e reescrita, via chat_completion()
 ```
+
+`chat_completion()` não manda `temperature`: o `gpt-5.6-luna` (e os demais modelos de raciocínio) recusam qualquer valor diferente do padrão com HTTP 400. O teste `test_limpeza_funciona_com_modelo_que_so_aceita_temperatura_padrao` quebra se alguém o recolocar.
 
 Limite da API Whisper: **25 MB** por arquivo (validado antes do envio).
 
@@ -187,11 +192,20 @@ A interface (não o log, que permanece técnico em pt-BR) é traduzida em três 
 
 ---
 
+## Testes
+
+```powershell
+python -m pip install pytest      # uma vez; fica fora do requirements.txt, que é o do build
+python -m pytest tests
+```
+
+`tests/test_api.py` simula a API trocando `requests.post` e cobre a limpeza, a reescrita e a exibição de erro. O último teste abre uma janela Tk de verdade por um instante.
+
 ## Build e distribuição
 
 ```powershell
 .\build.ps1          # dist\transcrizap.exe
-.\build.ps1 -Zip     # + Transcritor-de-Audio-de-Zap-v2.4.1-win64.zip (exe + LEIA-ME.txt)
+.\build.ps1 -Zip     # + Transcritor-de-Audio-de-Zap-v2.4.2-win64.zip (exe + LEIA-ME.txt)
 ```
 
 Decisões do `transcritor.spec`:

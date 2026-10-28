@@ -970,6 +970,9 @@ I18N = {
     "err_timeout":       ("Timeout: a API não respondeu em 5 minutos.",
                           "Timeout: the API did not respond within 5 minutes.",
                           "Timeout: la API no respondió en 5 minutos."),
+    "err_cleanup":       ("A limpeza falhou, então o texto acima é a transcrição sem limpeza. Motivo: {err}",
+                          "Cleanup failed, so the text above is the transcription without cleanup. Reason: {err}",
+                          "La limpieza falló, así que el texto de arriba es la transcripción sin limpiar. Motivo: {err}"),
     "footer_offer":      ("transcritor de áudio de zap é um oferecimento de",
                           "transcritor de áudio de zap is brought to you by",
                           "transcritor de áudio de zap es un obsequio de"),
@@ -1101,7 +1104,7 @@ def transcribe_audio(file_path: str, cfg: dict, api_key: str,
     log(f"Whisper → HTTP {resp.status_code}")
     if not resp.ok:
         log(f"Corpo do erro: {resp.text[:800]}")
-        raise RuntimeError(f"Erro Whisper (HTTP {resp.status_code}):\n{resp.text}")
+        raise RuntimeError(f"Erro Whisper (HTTP {resp.status_code}): {api_error_text(resp)}")
 
     transcricao = resp.text.strip()
     log(f"Transcrição recebida: {len(transcricao)} caracteres")
@@ -1115,25 +1118,41 @@ def transcribe_audio(file_path: str, cfg: dict, api_key: str,
     log(f"POST {base}/chat/completions ({cfg['gpt_model']}) ...")
 
     prompt = effective_cleanup_prompt(cfg).replace("{transcricao}", transcricao)
-    payload = {
-        "model": cfg["gpt_model"],
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.2
-    }
-    resp2 = requests.post(
-        f"{base}/chat/completions",
-        headers={**headers, "Content-Type": "application/json"},
-        json=payload, timeout=300
-    )
+    try:
+        resultado = chat_completion(cfg, api_key, prompt, timeout=300)
+    except Exception as e:
+        log(f"Limpeza falhou: {e}")
+        raise CleanupError(tr("err_cleanup", err=e), transcricao) from e
 
-    log(f"GPT → HTTP {resp2.status_code}")
-    if not resp2.ok:
-        log(f"Corpo do erro: {resp2.text[:800]}")
-        raise RuntimeError(f"Erro GPT (HTTP {resp2.status_code}):\n{resp2.text}")
-
-    resultado = resp2.json()["choices"][0]["message"]["content"].strip()
     log(f"Limpeza concluída: {len(resultado)} caracteres")
     return resultado
+
+
+class CleanupError(RuntimeError):
+    def __init__(self, message: str, transcript: str):
+        super().__init__(message)
+        self.transcript = transcript
+
+
+def api_error_text(resp: requests.Response) -> str:
+    try:
+        return resp.json()["error"]["message"]
+    except Exception:
+        return resp.text[:300]
+
+
+def chat_completion(cfg: dict, api_key: str, prompt: str, timeout: int) -> str:
+    resp = requests.post(
+        f"{api_base(cfg)}/chat/completions",
+        headers={"Authorization": f"Bearer {api_key}",
+                 "Content-Type": "application/json"},
+        json={"model": cfg.get("gpt_model", RECOMMENDED_GPT),
+              "messages": [{"role": "user", "content": prompt}]},
+        timeout=timeout
+    )
+    if not resp.ok:
+        raise RuntimeError(f"HTTP {resp.status_code}: {api_error_text(resp)}")
+    return resp.json()["choices"][0]["message"]["content"].strip()
 
 
 # ─── Paleta (light, dark) ─────────────────────────────────────────────────────
@@ -2229,7 +2248,7 @@ class TranscriptionCard(ctk.CTkFrame):
 
         self.error_label = ctk.CTkLabel(
             act, text="", font=ui_font(11),
-            text_color=DANGER, anchor="w", wraplength=340
+            text_color=DANGER, anchor="w", justify="left", wraplength=340
         )
         self.error_label.pack(side="left", padx=(10, 0))
 
@@ -2296,30 +2315,14 @@ class TranscriptionCard(ctk.CTkFrame):
 
         def _call():
             try:
-                payload = {
-                    "model": cfg.get("gpt_model", RECOMMENDED_GPT),
-                    "messages": [{"role": "user", "content": full_prompt}],
-                    "temperature": 0.4
-                }
-                resp = requests.post(
-                    f"{api_base(cfg)}/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json"
-                    },
-                    json=payload, timeout=120
-                )
-                if resp.ok:
-                    result = resp.json()["choices"][0]["message"]["content"].strip()
-                    self.after(0, self._apply_rewrite, result)
-                else:
-                    err = f"HTTP {resp.status_code}: {resp.text[:200]}"
-                    self.after(0, self._rewrite_status.configure, {"text": f"Erro: {err}"})
+                result = chat_completion(cfg, api_key, full_prompt, timeout=120)
+                self.after(0, self._apply_rewrite, result)
             except Exception as e:
-                self.after(0, self._rewrite_status.configure, {"text": f"Erro: {e}"})
+                failure = f"Erro: {e}"
+                self.after(0, lambda: self._rewrite_status.configure(text=failure))
             finally:
-                self.after(0, self._rewrite_run_btn.configure,
-                           {"state": "normal", "text": "Enviar"})
+                self.after(0, lambda: self._rewrite_run_btn.configure(
+                    state="normal", text=tr("send")))
 
         threading.Thread(target=_call, daemon=True).start()
 
@@ -2359,8 +2362,9 @@ class TranscriptionCard(ctk.CTkFrame):
         except Exception:
             pass
 
-    def set_result(self, text: str):
+    def set_result(self, text: str, warning: str = ""):
         """Chamado após transcrição bem-sucedida."""
+        self.error_label.configure(text=warning)
         self._pending_wave.stop_pulse()
         self.pending_box.destroy()
         if _PYGAME_OK and Path(self._audio_path).exists():
@@ -3342,6 +3346,9 @@ class App(ctk.CTk):
             )
             self.after(0, card.set_result, result)
             self.after(0, self._log, f"Concluído: {Path(path).name}")
+        except CleanupError as e:
+            self.after(0, self._log, f"Concluído sem limpeza: {Path(path).name}")
+            self.after(0, card.set_result, e.transcript, str(e))
         except requests.exceptions.ConnectionError:
             msg = tr("err_no_conn")
             self.after(0, self._log, f"ERRO: {msg}")

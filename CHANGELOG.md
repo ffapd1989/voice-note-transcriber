@@ -3,6 +3,25 @@
 All notable changes to this project are documented here.
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [2.4.2] — 2026-10-28
+
+### Fixed
+
+- **Cleanup and Rewrite work again with the default model.** v2.4.0 made
+  `gpt-5.6-luna` the default, but the app still sent a custom `temperature`
+  (0.2 for cleanup, 0.4 for Rewrite), which that model rejects with HTTP 400.
+  Every transcription with cleanup on failed. The app no longer sends
+  `temperature`, so every model uses its own default.
+- **A failed cleanup no longer throws away the transcription.** The audio had
+  already been transcribed (and paid for) when cleanup failed, but the card
+  showed only the error. It now shows the raw transcription, with a note
+  saying cleanup failed and why.
+- **Rewrite no longer gets stuck after an error.** The Send button stayed
+  disabled on "..." and the error never appeared, so the card could not be
+  rewritten again until the app was restarted.
+- **API errors are readable.** The card shows the API's own message instead
+  of the raw JSON body, left-aligned. The log still records the full body.
+
 ## [2.4.1] — 2026-09-18
 
 ### Fixed
